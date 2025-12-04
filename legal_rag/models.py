@@ -23,3 +23,4 @@ class SearchResult:
             f"Text: {text_preview}"
         )
 
+

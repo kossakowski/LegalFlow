@@ -35,3 +35,4 @@ class EmbeddingModel:
         )
         return embeddings
 
+

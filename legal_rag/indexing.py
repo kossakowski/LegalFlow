@@ -204,3 +204,4 @@ def build_index(
     
     print("Indeks został pomyślnie zbudowany i zapisany.")
 
+
