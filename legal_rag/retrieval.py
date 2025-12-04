@@ -1,4 +1,4 @@
-"""Klasa do wyszukiwania fragmentów przepisów w indeksie FAISS."""
+"""Class for searching legal provision fragments in FAISS index."""
 
 import json
 from pathlib import Path
@@ -12,7 +12,7 @@ from .models import SearchResult
 
 
 class LegalRetriever:
-    """Klasa do wyszukiwania przepisów prawnych w indeksie FAISS."""
+    """Class for searching legal provisions in FAISS index."""
     
     def __init__(
         self,
@@ -20,30 +20,30 @@ class LegalRetriever:
         model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     ):
         """
-        Inicjalizuje retriever ładując indeks FAISS i metadane.
+        Initialize retriever by loading FAISS index and metadata.
         
         Args:
-            index_dir: Katalog zawierający index.faiss i metadata.json.
-            model_name: Nazwa modelu embeddingowego (musi być taki sam jak przy budowie).
+            index_dir: Directory containing index.faiss and metadata.json.
+            model_name: Name of embedding model (must be same as used for building).
         """
         index_path = Path(index_dir) / "index.faiss"
         metadata_path = Path(index_dir) / "metadata.json"
         
         if not index_path.exists():
-            raise FileNotFoundError(f"Indeks nie istnieje: {index_path}")
+            raise FileNotFoundError(f"Index does not exist: {index_path}")
         if not metadata_path.exists():
-            raise FileNotFoundError(f"Plik metadanych nie istnieje: {metadata_path}")
+            raise FileNotFoundError(f"Metadata file does not exist: {metadata_path}")
         
-        print(f"Ładowanie indeksu z: {index_path}")
+        print(f"Loading index from: {index_path}")
         self.index = faiss.read_index(str(index_path))
         
-        print(f"Ładowanie metadanych z: {metadata_path}")
+        print(f"Loading metadata from: {metadata_path}")
         with open(metadata_path, "r", encoding="utf-8") as f:
             self.metadata = json.load(f)
         
         self.embedding_model = EmbeddingModel(model_name)
         
-        print(f"Zainicjalizowano retriever z {len(self.metadata)} fragmentami.")
+        print(f"Initialized retriever with {len(self.metadata)} fragments.")
     
     def search(
         self,
@@ -53,33 +53,33 @@ class LegalRetriever:
         search_multiplier: float = 2.0
     ) -> List[SearchResult]:
         """
-        Wyszukuje fragmenty przepisów podobne do zapytania.
+        Search for legal provision fragments similar to query.
         
         Args:
-            query: Tekst zapytania.
-            top_k: Maksymalna liczba wyników do zwrócenia. Jeśli bardzo duża (>100000), zwróci wszystkie wyniki.
-            min_score: Minimalny score (cosine similarity) do uwzględnienia.
-            search_multiplier: Mnożnik określający ile razy więcej kandydatów wyszukać niż top_k (domyślnie: 2.0).
+            query: Query text.
+            top_k: Maximum number of results to return. If very large (>100000), returns all results.
+            min_score: Minimum score (cosine similarity) to include.
+            search_multiplier: Multiplier determining how many more candidates to search than top_k (default: 2.0).
         
         Returns:
-            Lista obiektów SearchResult posortowana malejąco po score.
+            List of SearchResult objects sorted descending by score.
         """
-        # Oblicz embedding zapytania
+        # Compute query embedding
         query_embedding = self.embedding_model.encode([query])
         
-        # Jeśli top_k jest bardzo duże, wyszukaj wszystkie dostępne wyniki
+        # If top_k is very large, search all available results
         if top_k > 100000:
             search_k = self.index.ntotal
         else:
-            # Wyszukaj w indeksie (używamy top_k większego, żeby móc filtrować po min_score)
+            # Search in index (we use larger top_k to be able to filter by min_score)
             search_k = min(int(top_k * search_multiplier), self.index.ntotal)
         
         scores, indices = self.index.search(query_embedding.astype("float32"), search_k)
         
-        # Przygotuj wyniki
+        # Prepare results
         results = []
         for score, idx in zip(scores[0], indices[0]):
-            if idx < 0:  # FAISS zwraca -1 dla pustych wyników
+            if idx < 0:  # FAISS returns -1 for empty results
                 continue
             
             if score < min_score:
@@ -94,11 +94,9 @@ class LegalRetriever:
                 score=float(score)
             ))
         
-        # Sortuj malejąco po score i ogranicz do top_k (jeśli nie jest bardzo duże)
+        # Sort descending by score and limit to top_k (if not very large)
         results.sort(key=lambda x: x.score, reverse=True)
         if top_k > 100000:
-            return results  # Zwróć wszystkie wyniki
+            return results  # Return all results
         else:
             return results[:top_k]
-
-

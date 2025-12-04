@@ -90,3 +90,4 @@ class TestEmbeddingModel:
         assert isinstance(embeddings, np.ndarray)
         assert embeddings.shape[0] == 0
 
+

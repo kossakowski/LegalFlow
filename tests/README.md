@@ -1,61 +1,60 @@
-# Testy dla LegalFlow
+# Tests for LegalFlow
 
-Ten katalog zawiera testy jednostkowe i integracyjne dla systemu LegalFlow.
+This directory contains unit and integration tests for the LegalFlow system.
 
-## Struktura testów
+## Test Structure
 
-- `test_models.py` - Testy dla modeli danych (SearchResult)
-- `test_embeddings.py` - Testy dla modelu embeddingowego
-- `test_indexing.py` - Testy dla funkcji indeksowania
-- `test_retrieval.py` - Testy dla klasy LegalRetriever
-- `test_integration.py` - Testy integracyjne całego systemu
-- `conftest.py` - Konfiguracja i fixtures dla testów
+- `test_models.py` - Tests for data models (SearchResult)
+- `test_embeddings.py` - Tests for embedding model
+- `test_indexing.py` - Tests for indexing functions
+- `test_retrieval.py` - Tests for LegalRetriever class
+- `test_integration.py` - Integration tests for the entire system
+- `conftest.py` - Configuration and fixtures for tests
 
-## Uruchamianie testów
+## Running Tests
 
-### Wszystkie testy
+### All Tests
 
 ```bash
 pytest
 ```
 
-### Z raportem pokrycia kodu
+### With Code Coverage Report
 
 ```bash
 pytest --cov=legal_rag --cov-report=html
 ```
 
-Raport HTML będzie dostępny w `htmlcov/index.html`.
+HTML report will be available in `htmlcov/index.html`.
 
-### Pojedynczy plik testowy
+### Single Test File
 
 ```bash
 pytest tests/test_models.py
 ```
 
-### Pojedynczy test
+### Single Test
 
 ```bash
 pytest tests/test_models.py::TestSearchResult::test_search_result_creation
 ```
 
-### Verbose output
+### Verbose Output
 
 ```bash
 pytest -v
 ```
 
-## Wymagania
+## Requirements
 
-Testy wymagają zainstalowanych zależności z `requirements.txt`:
+Tests require dependencies from `requirements.txt` to be installed:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Uwagi
+## Notes
 
-- Testy używają rzeczywistego modelu embeddingowego, więc mogą być wolniejsze
-- Niektóre testy tworzą tymczasowe pliki i katalogi
-- Testy integracyjne mogą wymagać więcej czasu na wykonanie
-
+- Tests use real embedding model, so they may be slower
+- Some tests create temporary files and directories
+- Integration tests may require more time to execute

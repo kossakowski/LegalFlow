@@ -1,26 +1,33 @@
 # LegalFlow
 
-Prosty system retrieval przepisów prawnych oparty na lokalnych embeddingach i indeksie FAISS.
+Simple legal provision retrieval system based on local embeddings and FAISS index.
 
-## Wymagania
+## Requirements
 
-- Python 3.10 lub nowszy
-- Środowisko WSL (Linux)
+- Python 3.10 or newer
+- WSL environment (Linux)
 - pip
 
-## Instalacja
+## Installation
 
-1. Zainstaluj zależności:
+1. Create and activate virtual environment (recommended):
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Przygotowanie danych
+## Data Preparation
 
-Umieść pliki `.txt` z przepisami prawnymi w katalogu `./data/txt`. Pliki powinny być zakodowane w UTF-8.
+Place `.txt` files with legal provisions in the `./data/txt` directory. Files should be encoded in UTF-8.
 
-Przykładowa struktura:
+Example structure:
 
 ```
 data/
@@ -30,59 +37,94 @@ data/
     ...
 ```
 
-## Budowa indeksu
+## Building Index
 
-Aby zbudować indeks FAISS z plików źródłowych:
+To build FAISS index from source files:
 
 ```bash
 python -m legal_rag.main build-index --input-dir ./data/txt --output-dir ./data/index
 ```
 
-Opcjonalne parametry:
+Optional parameters:
 
-- `--model-name` - nazwa modelu embeddingowego (domyślnie: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
-- `--max-chunk-size` - maksymalna długość chunka w znakach (domyślnie: 1200)
+- `--model-name` - name of embedding model (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
+- `--max-chunk-size` - maximum chunk length in characters (default: 1200)
 
-## Wyszukiwanie
+## Searching
 
-Aby wyszukać fragmenty przepisów:
+To search for legal provision fragments:
 
 ```bash
-python -m legal_rag.main query --index-dir ./data/index --query "ile przedawnia się roszczenie o wynagrodzenie z umowy sprzedaży?" --top-k 20 --min-score 0.0
+python -m legal_rag.main query --index-dir ./data/index --query "when does a claim for payment from a sales contract become time-barred?" --top-k 50 --min-score 0.0
 ```
 
-Parametry:
+Parameters:
 
-- `--index-dir` - katalog zawierający `index.faiss` i `metadata.json`
-- `--query` - tekst zapytania
-- `--top-k` - maksymalna liczba wyników (domyślnie: 20)
-- `--min-score` - minimalny score (cosine similarity) do uwzględnienia (domyślnie: 0.0)
-- `--model-name` - nazwa modelu embeddingowego (musi być taki sam jak przy budowie)
+- `--index-dir` - directory containing `index.faiss` and `metadata.json`
+- `--query` - query text
+- `--top-k` - maximum number of results (default: 50). Use `0` to display all results
+- `--min-score` - minimum score (cosine similarity) to include (default: 0.0)
+- `--model-name` - name of embedding model (must be same as used for building)
+- `--search-multiplier` - multiplier determining how many more candidates to search than top_k (default: 2.0)
 
-## Architektura
+### Usage Examples
 
-Projekt został zaprojektowany z myślą o łatwej rozbudowie o RAG z LLM:
+```bash
+# Basic search (50 results)
+python -m legal_rag.main query --index-dir ./data/index --query "sales contract"
 
-- `LegalRetriever` - klasa do wyszukiwania fragmentów
-- `SearchResult` - struktura danych zawierająca tekst, metadane i score
-- Wyniki można łatwo przekazać do LLM jako kontekst
+# More results
+python -m legal_rag.main query --index-dir ./data/index --query "liability" --top-k 100
 
-## Struktura projektu
+# All results
+python -m legal_rag.main query --index-dir ./data/index --query "statute of limitations" --top-k 0
+
+# With minimum similarity filtering
+python -m legal_rag.main query --index-dir ./data/index --query "property" --min-score 0.5
+
+# With larger search multiplier (more candidates)
+python -m legal_rag.main query --index-dir ./data/index --query "contract" --search-multiplier 3.0
+```
+
+## Architecture
+
+The project is designed for easy extension with RAG and LLM:
+
+- `LegalRetriever` - class for searching fragments
+- `SearchResult` - data structure containing text, metadata and score
+- Results can be easily passed to LLM as context
+
+## Project Structure
 
 ```
 LegalFlow/
 ├── legal_rag/
 │   ├── __init__.py
-│   ├── models.py          # Modele danych (SearchResult)
-│   ├── embeddings.py      # Klasa EmbeddingModel
-│   ├── indexing.py        # Logika budowy indeksu
-│   ├── retrieval.py       # Klasa LegalRetriever
-│   └── main.py            # Interfejs CLI
+│   ├── models.py          # Data models (SearchResult)
+│   ├── embeddings.py      # EmbeddingModel class
+│   ├── indexing.py        # Index building logic
+│   ├── retrieval.py       # LegalRetriever class
+│   └── main.py            # CLI interface
 ├── data/
-│   ├── txt/               # Pliki źródłowe .txt
-│   └── index/             # Indeks FAISS i metadane
+│   ├── txt/               # Source .txt files
+│   └── index/             # FAISS index and metadata
+├── tests/                  # Unit and integration tests
 ├── requirements.txt
 └── README.md
 ```
 
+## Tests
 
+To run tests:
+
+```bash
+pytest
+```
+
+With code coverage report:
+
+```bash
+pytest --cov=legal_rag --cov-report=html
+```
+
+More information in [tests/README.md](tests/README.md).

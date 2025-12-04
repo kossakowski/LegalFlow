@@ -160,3 +160,4 @@ class TestIntegration:
         # Powinno być więcej wyników
         assert count2 > count1
 
+

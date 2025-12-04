@@ -1,11 +1,11 @@
-"""Modele danych dla systemu retrieval."""
+"""Data models for the retrieval system."""
 
 from dataclasses import dataclass
 
 
 @dataclass
 class SearchResult:
-    """Wynik wyszukiwania fragmentu przepisu."""
+    """Search result for a legal provision fragment."""
     
     id: int
     text: str
@@ -14,7 +14,7 @@ class SearchResult:
     score: float
     
     def __str__(self) -> str:
-        """Reprezentacja tekstowa wyniku."""
+        """Text representation of the result."""
         article_info = f" [{self.article_hint}]" if self.article_hint else ""
         text_preview = self.text[:300] + "..." if len(self.text) > 300 else self.text
         return (
@@ -22,5 +22,3 @@ class SearchResult:
             f"Source: {self.source_file}{article_info}\n"
             f"Text: {text_preview}"
         )
-
-

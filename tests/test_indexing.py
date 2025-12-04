@@ -25,11 +25,11 @@ class TestLoadTextFiles:
             load_text_files("/nonexistent/directory")
     
     def test_load_text_files_empty_dir(self, temp_dir: Path):
-        """Test wczytywania z pustego katalogu."""
+        """Test loading from empty directory."""
         empty_dir = temp_dir / "empty"
         empty_dir.mkdir()
         
-        with pytest.raises(ValueError, match="Nie znaleziono żadnych plików"):
+        with pytest.raises(ValueError, match="No .txt files found"):
             load_text_files(str(empty_dir))
     
     def test_load_text_files_recursive(self, temp_dir: Path):
@@ -197,13 +197,13 @@ class TestBuildIndex:
         assert isinstance(first["source_file"], str)
     
     def test_build_index_empty_input(self, temp_dir: Path):
-        """Test budowy indeksu z pustym katalogiem."""
+        """Test building index from empty directory."""
         empty_dir = temp_dir / "empty"
         empty_dir.mkdir()
         index_dir = temp_dir / "index"
         index_dir.mkdir()
         
-        with pytest.raises(ValueError, match="Nie znaleziono żadnych plików"):
+        with pytest.raises(ValueError, match="No .txt files found"):
             build_index(
                 input_dir=str(empty_dir),
                 output_dir=str(index_dir)

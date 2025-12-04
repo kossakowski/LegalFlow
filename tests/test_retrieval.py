@@ -25,24 +25,24 @@ class TestLegalRetriever:
         assert retriever.embedding_model is not None
     
     def test_retriever_initialization_nonexistent_index(self, temp_dir: Path):
-        """Test inicjalizacji z nieistniejącym indeksem."""
+        """Test initialization with nonexistent index."""
         index_dir = temp_dir / "nonexistent"
         index_dir.mkdir()
         
-        with pytest.raises(FileNotFoundError, match="Indeks nie istnieje"):
+        with pytest.raises(FileNotFoundError, match="Index does not exist"):
             LegalRetriever(index_dir=str(index_dir))
     
     def test_retriever_initialization_missing_metadata(self, temp_dir: Path):
-        """Test inicjalizacji z brakującymi metadanymi."""
+        """Test initialization with missing metadata."""
         index_dir = temp_dir / "index"
         index_dir.mkdir()
         
-        # Utwórz pusty indeks FAISS
+        # Create empty FAISS index
         dimension = 384
         index = faiss.IndexFlatIP(dimension)
         faiss.write_index(index, str(index_dir / "index.faiss"))
         
-        with pytest.raises(FileNotFoundError, match="Plik metadanych nie istnieje"):
+        with pytest.raises(FileNotFoundError, match="Metadata file does not exist"):
             LegalRetriever(index_dir=str(index_dir))
     
     def test_retriever_search_basic(self, sample_index: Path):

@@ -82,3 +82,4 @@ class TestSearchResult:
         assert "[Art." not in str_repr
         assert "test.txt" in str_repr
 
+

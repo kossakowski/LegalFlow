@@ -1,4 +1,4 @@
-"""Logika budowy indeksu FAISS z przepisów prawnych."""
+"""FAISS index building logic from legal provisions."""
 
 import json
 import os
@@ -14,17 +14,17 @@ from .embeddings import EmbeddingModel
 
 def load_text_files(input_dir: str) -> Dict[str, str]:
     """
-    Wczytuje wszystkie pliki .txt z katalogu (rekurencyjnie).
+    Load all .txt files from directory (recursively).
     
     Args:
-        input_dir: Ścieżka do katalogu z plikami .txt.
+        input_dir: Path to directory with .txt files.
         
     Returns:
-        Słownik: {ścieżka_pliku: zawartość_tekstowa}
+        Dictionary: {file_path: text_content}
     """
     input_path = Path(input_dir)
     if not input_path.exists():
-        raise FileNotFoundError(f"Katalog wejściowy nie istnieje: {input_dir}")
+        raise FileNotFoundError(f"Input directory does not exist: {input_dir}")
     
     files_content = {}
     for txt_file in input_path.rglob("*.txt"):
@@ -34,10 +34,10 @@ def load_text_files(input_dir: str) -> Dict[str, str]:
                 if content:
                     files_content[str(txt_file)] = content
         except Exception as e:
-            print(f"Ostrzeżenie: Nie udało się wczytać pliku {txt_file}: {e}")
+            print(f"Warning: Failed to load file {txt_file}: {e}")
     
     if not files_content:
-        raise ValueError(f"Nie znaleziono żadnych plików .txt w katalogu {input_dir}")
+        raise ValueError(f"No .txt files found in directory {input_dir}")
     
     return files_content
 
@@ -48,30 +48,30 @@ def split_text_into_chunks(
     max_chunk_size: int = 1200
 ) -> List[Dict[str, Any]]:
     """
-    Dzieli tekst na fragmenty (chunki) na poziomie artykułów.
+    Split text into fragments (chunks) at article level.
     
-    Próbuje wykrywać nagłówki w stylu "Art. 118." i grupować tekst od nagłówka
-    do następnego nagłówka jako jeden fragment. Jeśli nie ma takich nagłówków,
-    dzieli po pustych liniach lub co max_chunk_size znaków.
+    Attempts to detect headers in style "Art. 118." and group text from header
+    to next header as one fragment. If no such headers exist,
+    splits by empty lines or every max_chunk_size characters.
     
     Args:
-        text: Tekst do podziału.
-        source_file: Ścieżka do pliku źródłowego.
-        max_chunk_size: Maksymalna długość chunka w znakach (gdy brak nagłówków).
+        text: Text to split.
+        source_file: Path to source file.
+        max_chunk_size: Maximum chunk length in characters (when no headers).
         
     Returns:
-        Lista słowników z polami: text, source_file, article_hint.
+        List of dictionaries with fields: text, source_file, article_hint.
     """
     chunks = []
     
-    # Wzorzec do wykrywania nagłówków artykułów (np. "Art. 118.", "Art. 1.", "Art. 123a.")
+    # Pattern to detect article headers (e.g., "Art. 118.", "Art. 1.", "Art. 123a.")
     article_pattern = re.compile(r'^Art\.\s*\d+[a-z]?\.', re.MULTILINE | re.IGNORECASE)
     
-    # Znajdź wszystkie pozycje nagłówków
+    # Find all header positions
     matches = list(article_pattern.finditer(text))
     
     if len(matches) > 1:
-        # Mamy nagłówki - dziel po artykułach
+        # We have headers - split by articles
         for i in range(len(matches)):
             start_pos = matches[i].start()
             end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(text)
@@ -85,7 +85,7 @@ def split_text_into_chunks(
                     "article_hint": article_hint
                 })
     elif len(matches) == 1:
-        # Jeden artykuł - cały tekst jako jeden chunk
+        # Single article - entire text as one chunk
         article_hint = matches[0].group().strip()
         chunks.append({
             "text": text.strip(),
@@ -93,7 +93,7 @@ def split_text_into_chunks(
             "article_hint": article_hint
         })
     else:
-        # Brak nagłówków - dziel po pustych liniach lub co max_chunk_size znaków
+        # No headers - split by empty lines or every max_chunk_size characters
         paragraphs = text.split("\n\n")
         current_chunk = ""
         
@@ -102,9 +102,9 @@ def split_text_into_chunks(
             if not para:
                 continue
             
-            # Jeśli pojedynczy akapit jest dłuższy niż max_chunk_size, podziel go
+            # If a single paragraph is longer than max_chunk_size, split it
             if len(para) > max_chunk_size:
-                # Najpierw zapisz aktualny chunk jeśli istnieje
+                # First save current chunk if it exists
                 if current_chunk:
                     chunks.append({
                         "text": current_chunk,
@@ -113,7 +113,7 @@ def split_text_into_chunks(
                     })
                     current_chunk = ""
                 
-                # Podziel długi akapit na mniejsze fragmenty
+                # Split long paragraph into smaller fragments
                 start = 0
                 while start < len(para):
                     end = start + max_chunk_size
@@ -125,13 +125,13 @@ def split_text_into_chunks(
                     })
                     start = end
             elif len(current_chunk) + len(para) + 1 <= max_chunk_size:
-                # Dodaj akapit do aktualnego chunka
+                # Add paragraph to current chunk
                 if current_chunk:
                     current_chunk += "\n\n" + para
                 else:
                     current_chunk = para
             else:
-                # Zapisz aktualny chunk i zacznij nowy
+                # Save current chunk and start new one
                 if current_chunk:
                     chunks.append({
                         "text": current_chunk,
@@ -157,52 +157,52 @@ def build_index(
     max_chunk_size: int = 1200
 ) -> None:
     """
-    Buduje indeks FAISS z przepisów prawnych.
+    Build FAISS index from legal provisions.
     
-    Wczytuje pliki .txt z katalogu wejściowego, dzieli na fragmenty,
-    oblicza embeddingi i buduje indeks FAISS. Zapisuje:
-    - index.faiss - indeks FAISS
-    - metadata.json - metadane fragmentów
+    Loads .txt files from input directory, splits into fragments,
+    computes embeddings and builds FAISS index. Saves:
+    - index.faiss - FAISS index
+    - metadata.json - fragment metadata
     
     Args:
-        input_dir: Katalog z plikami .txt.
-        output_dir: Katalog wyjściowy dla indeksu i metadanych.
-        model_name: Nazwa modelu embeddingowego.
-        max_chunk_size: Maksymalna długość chunka w znakach.
+        input_dir: Directory with .txt files.
+        output_dir: Output directory for index and metadata.
+        model_name: Name of embedding model.
+        max_chunk_size: Maximum chunk length in characters.
     """
-    print(f"Wczytywanie plików z katalogu: {input_dir}")
+    print(f"Loading files from directory: {input_dir}")
     files_content = load_text_files(input_dir)
-    print(f"Wczytano {len(files_content)} plików.")
+    print(f"Loaded {len(files_content)} files.")
     
-    # Dzielenie na fragmenty
-    print("Dzielenie tekstów na fragmenty...")
+    # Splitting into fragments
+    print("Splitting texts into fragments...")
     all_chunks = []
     for file_path, content in files_content.items():
         chunks = split_text_into_chunks(content, file_path, max_chunk_size)
         all_chunks.extend(chunks)
     
-    print(f"Utworzono {len(all_chunks)} fragmentów.")
+    print(f"Created {len(all_chunks)} fragments.")
     
     if not all_chunks:
-        raise ValueError("Nie udało się utworzyć żadnych fragmentów z plików wejściowych.")
+        raise ValueError("Failed to create any fragments from input files.")
     
-    # Obliczanie embeddingów
-    print(f"Obliczanie embeddingów za pomocą modelu: {model_name}")
+    # Computing embeddings
+    print(f"Computing embeddings using model: {model_name}")
     embedding_model = EmbeddingModel(model_name)
     
     texts = [chunk["text"] for chunk in all_chunks]
     embeddings = embedding_model.encode(texts)
     
-    print(f"Obliczono embeddingi o wymiarze: {embeddings.shape[1]}")
+    print(f"Computed embeddings with dimension: {embeddings.shape[1]}")
     
-    # Budowa indeksu FAISS (IndexFlatIP z znormalizowanymi embeddingami)
+    # Building FAISS index (IndexFlatIP with normalized embeddings)
     dimension = embeddings.shape[1]
-    index = faiss.IndexFlatIP(dimension)  # Inner Product dla cosine similarity z normalizacją
+    index = faiss.IndexFlatIP(dimension)  # Inner Product for cosine similarity with normalization
     index.add(embeddings.astype("float32"))
     
-    print(f"Zbudowano indeks FAISS z {index.ntotal} wektorami.")
+    print(f"Built FAISS index with {index.ntotal} vectors.")
     
-    # Przygotowanie metadanych
+    # Preparing metadata
     metadata = []
     for i, chunk in enumerate(all_chunks):
         metadata.append({
@@ -212,20 +212,18 @@ def build_index(
             "article_hint": chunk["article_hint"]
         })
     
-    # Zapis na dysk
+    # Save to disk
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
     index_path = output_path / "index.faiss"
     metadata_path = output_path / "metadata.json"
     
-    print(f"Zapisywanie indeksu do: {index_path}")
+    print(f"Saving index to: {index_path}")
     faiss.write_index(index, str(index_path))
     
-    print(f"Zapisywanie metadanych do: {metadata_path}")
+    print(f"Saving metadata to: {metadata_path}")
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
     
-    print("Indeks został pomyślnie zbudowany i zapisany.")
-
-
+    print("Index successfully built and saved.")

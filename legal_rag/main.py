@@ -1,4 +1,4 @@
-"""Interfejs CLI do systemu retrieval przepisów prawnych."""
+"""CLI interface for legal provision retrieval system."""
 
 import argparse
 import sys
@@ -9,7 +9,7 @@ from .retrieval import LegalRetriever
 
 
 def cmd_build_index(args: argparse.Namespace) -> None:
-    """Komenda do budowy indeksu."""
+    """Command to build index."""
     try:
         build_index(
             input_dir=args.input_dir,
@@ -18,19 +18,19 @@ def cmd_build_index(args: argparse.Namespace) -> None:
             max_chunk_size=args.max_chunk_size
         )
     except Exception as e:
-        print(f"Błąd podczas budowy indeksu: {e}", file=sys.stderr)
+        print(f"Error building index: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def cmd_query(args: argparse.Namespace) -> None:
-    """Komenda do wyszukiwania."""
+    """Command to search."""
     try:
         retriever = LegalRetriever(
             index_dir=args.index_dir,
             model_name=args.model_name
         )
         
-        # Jeśli top_k=0, ustaw na bardzo dużą wartość (wszystkie wyniki)
+        # If top_k=0, set to very large value (all results)
         top_k = args.top_k if args.top_k > 0 else 999999
         
         results = retriever.search(
@@ -41,10 +41,10 @@ def cmd_query(args: argparse.Namespace) -> None:
         )
         
         if not results:
-            print("Nie znaleziono żadnych wyników spełniających kryteria.")
+            print("No results found matching criteria.")
             return
         
-        print(f"\nZnaleziono {len(results)} wyników:\n")
+        print(f"\nFound {len(results)} results:\n")
         print("=" * 80)
         
         for i, result in enumerate(results, 1):
@@ -52,90 +52,90 @@ def cmd_query(args: argparse.Namespace) -> None:
             print("-" * 80)
         
     except Exception as e:
-        print(f"Błąd podczas wyszukiwania: {e}", file=sys.stderr)
+        print(f"Error during search: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def main() -> None:
-    """Główna funkcja CLI."""
+    """Main CLI function."""
     parser = argparse.ArgumentParser(
-        description="LegalFlow - System retrieval przepisów prawnych",
+        description="LegalFlow - Legal provision retrieval system",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
-    subparsers = parser.add_subparsers(dest="command", help="Dostępne komendy")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
     
-    # Komenda build-index
+    # build-index command
     parser_build = subparsers.add_parser(
         "build-index",
-        help="Buduje indeks FAISS z plików .txt"
+        help="Build FAISS index from .txt files"
     )
     parser_build.add_argument(
         "--input-dir",
         type=str,
         required=True,
-        help="Katalog z plikami .txt zawierającymi przepisy"
+        help="Directory with .txt files containing legal provisions"
     )
     parser_build.add_argument(
         "--output-dir",
         type=str,
         required=True,
-        help="Katalog wyjściowy dla indeksu i metadanych"
+        help="Output directory for index and metadata"
     )
     parser_build.add_argument(
         "--model-name",
         type=str,
         default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        help="Nazwa modelu embeddingowego (domyślnie: paraphrase-multilingual-MiniLM-L12-v2)"
+        help="Name of embedding model (default: paraphrase-multilingual-MiniLM-L12-v2)"
     )
     parser_build.add_argument(
         "--max-chunk-size",
         type=int,
         default=1200,
-        help="Maksymalna długość chunka w znakach (domyślnie: 1200)"
+        help="Maximum chunk length in characters (default: 1200)"
     )
     parser_build.set_defaults(func=cmd_build_index)
     
-    # Komenda query
+    # query command
     parser_query = subparsers.add_parser(
         "query",
-        help="Wyszukuje fragmenty przepisów"
+        help="Search for legal provision fragments"
     )
     parser_query.add_argument(
         "--index-dir",
         type=str,
         required=True,
-        help="Katalog zawierający index.faiss i metadata.json"
+        help="Directory containing index.faiss and metadata.json"
     )
     parser_query.add_argument(
         "--query",
         type=str,
         required=True,
-        help="Tekst zapytania"
+        help="Query text"
     )
     parser_query.add_argument(
         "--top-k",
         type=int,
         default=50,
-        help="Maksymalna liczba wyników (domyślnie: 50). Użyj 0 aby wyświetlić wszystkie wyniki."
+        help="Maximum number of results (default: 50). Use 0 to display all results."
     )
     parser_query.add_argument(
         "--min-score",
         type=float,
         default=0.0,
-        help="Minimalny score (cosine similarity) do uwzględnienia (domyślnie: 0.0)"
+        help="Minimum score (cosine similarity) to include (default: 0.0)"
     )
     parser_query.add_argument(
         "--model-name",
         type=str,
         default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        help="Nazwa modelu embeddingowego (musi być taki sam jak przy budowie)"
+        help="Name of embedding model (must be same as used for building)"
     )
     parser_query.add_argument(
         "--search-multiplier",
         type=float,
         default=2.0,
-        help="Mnożnik określający ile razy więcej kandydatów wyszukać niż top_k (domyślnie: 2.0)"
+        help="Multiplier determining how many more candidates to search than top_k (default: 2.0)"
     )
     parser_query.set_defaults(func=cmd_query)
     
@@ -150,5 +150,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
