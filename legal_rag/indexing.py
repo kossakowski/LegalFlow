@@ -102,12 +102,36 @@ def split_text_into_chunks(
             if not para:
                 continue
             
-            if len(current_chunk) + len(para) + 1 <= max_chunk_size:
+            # Jeśli pojedynczy akapit jest dłuższy niż max_chunk_size, podziel go
+            if len(para) > max_chunk_size:
+                # Najpierw zapisz aktualny chunk jeśli istnieje
+                if current_chunk:
+                    chunks.append({
+                        "text": current_chunk,
+                        "source_file": source_file,
+                        "article_hint": None
+                    })
+                    current_chunk = ""
+                
+                # Podziel długi akapit na mniejsze fragmenty
+                start = 0
+                while start < len(para):
+                    end = start + max_chunk_size
+                    chunk_text = para[start:end]
+                    chunks.append({
+                        "text": chunk_text,
+                        "source_file": source_file,
+                        "article_hint": None
+                    })
+                    start = end
+            elif len(current_chunk) + len(para) + 1 <= max_chunk_size:
+                # Dodaj akapit do aktualnego chunka
                 if current_chunk:
                     current_chunk += "\n\n" + para
                 else:
                     current_chunk = para
             else:
+                # Zapisz aktualny chunk i zacznij nowy
                 if current_chunk:
                     chunks.append({
                         "text": current_chunk,
