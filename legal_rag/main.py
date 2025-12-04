@@ -30,10 +30,14 @@ def cmd_query(args: argparse.Namespace) -> None:
             model_name=args.model_name
         )
         
+        # Jeśli top_k=0, ustaw na bardzo dużą wartość (wszystkie wyniki)
+        top_k = args.top_k if args.top_k > 0 else 999999
+        
         results = retriever.search(
             query=args.query,
-            top_k=args.top_k,
-            min_score=args.min_score
+            top_k=top_k,
+            min_score=args.min_score,
+            search_multiplier=args.search_multiplier
         )
         
         if not results:
@@ -112,8 +116,8 @@ def main() -> None:
     parser_query.add_argument(
         "--top-k",
         type=int,
-        default=20,
-        help="Maksymalna liczba wyników (domyślnie: 20)"
+        default=50,
+        help="Maksymalna liczba wyników (domyślnie: 50). Użyj 0 aby wyświetlić wszystkie wyniki."
     )
     parser_query.add_argument(
         "--min-score",
@@ -126,6 +130,12 @@ def main() -> None:
         type=str,
         default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         help="Nazwa modelu embeddingowego (musi być taki sam jak przy budowie)"
+    )
+    parser_query.add_argument(
+        "--search-multiplier",
+        type=float,
+        default=2.0,
+        help="Mnożnik określający ile razy więcej kandydatów wyszukać niż top_k (domyślnie: 2.0)"
     )
     parser_query.set_defaults(func=cmd_query)
     

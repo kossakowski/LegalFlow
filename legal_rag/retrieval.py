@@ -48,16 +48,18 @@ class LegalRetriever:
     def search(
         self,
         query: str,
-        top_k: int = 20,
-        min_score: float = 0.0
+        top_k: int = 50,
+        min_score: float = 0.0,
+        search_multiplier: float = 2.0
     ) -> List[SearchResult]:
         """
         Wyszukuje fragmenty przepisów podobne do zapytania.
         
         Args:
             query: Tekst zapytania.
-            top_k: Maksymalna liczba wyników do zwrócenia.
+            top_k: Maksymalna liczba wyników do zwrócenia. Jeśli bardzo duża (>100000), zwróci wszystkie wyniki.
             min_score: Minimalny score (cosine similarity) do uwzględnienia.
+            search_multiplier: Mnożnik określający ile razy więcej kandydatów wyszukać niż top_k (domyślnie: 2.0).
         
         Returns:
             Lista obiektów SearchResult posortowana malejąco po score.
@@ -65,8 +67,13 @@ class LegalRetriever:
         # Oblicz embedding zapytania
         query_embedding = self.embedding_model.encode([query])
         
-        # Wyszukaj w indeksie (używamy top_k większego, żeby móc filtrować po min_score)
-        search_k = min(top_k * 2, self.index.ntotal)  # Pobierz więcej, żeby mieć zapas po filtrowaniu
+        # Jeśli top_k jest bardzo duże, wyszukaj wszystkie dostępne wyniki
+        if top_k > 100000:
+            search_k = self.index.ntotal
+        else:
+            # Wyszukaj w indeksie (używamy top_k większego, żeby móc filtrować po min_score)
+            search_k = min(int(top_k * search_multiplier), self.index.ntotal)
+        
         scores, indices = self.index.search(query_embedding.astype("float32"), search_k)
         
         # Przygotuj wyniki
@@ -87,8 +94,11 @@ class LegalRetriever:
                 score=float(score)
             ))
         
-        # Sortuj malejąco po score i ogranicz do top_k
+        # Sortuj malejąco po score i ogranicz do top_k (jeśli nie jest bardzo duże)
         results.sort(key=lambda x: x.score, reverse=True)
-        return results[:top_k]
+        if top_k > 100000:
+            return results  # Zwróć wszystkie wyniki
+        else:
+            return results[:top_k]
 
 
