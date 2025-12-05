@@ -118,8 +118,8 @@ def main() -> None:
     parser_query.add_argument(
         "--top-k",
         type=int,
-        default=50,
-        help="Maximum number of results (default: 50). Use 0 to display all results."
+        default=100,
+        help="Maximum number of results (default: 100). Use 0 to display all results."
     )
     parser_query.add_argument(
         "--min-score",
@@ -136,8 +136,8 @@ def main() -> None:
     parser_query.add_argument(
         "--search-multiplier",
         type=float,
-        default=2.0,
-        help="Multiplier determining how many more candidates to search than top_k (default: 2.0)"
+        default=100.0,
+        help="Multiplier determining how many more candidates to search than top_k (default: 100.0)"
     )
     parser_query.add_argument(
         "--weight-embedding",

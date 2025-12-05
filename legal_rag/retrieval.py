@@ -74,9 +74,9 @@ class LegalRetriever:
     def search(
         self,
         query: str,
-        top_k: int = 50,
+        top_k: int = 100,
         min_score: float = 0.0,
-        search_multiplier: float = 2.0,
+        search_multiplier: float = 100.0,
         weight_embedding: float = 1.0,
         weight_keyword: float = 1.0
     ) -> List[SearchResult]:
@@ -87,7 +87,7 @@ class LegalRetriever:
             query: Query text.
             top_k: Maximum number of results to return. If very large (>100000), returns all results.
             min_score: Minimum combined score to include.
-            search_multiplier: Multiplier determining how many more candidates to search than top_k (default: 2.0).
+            search_multiplier: Multiplier determining how many more candidates to search than top_k (default: 100.0).
             weight_embedding: Weight for embedding-based score (default: 1.0).
             weight_keyword: Weight for keyword/BM25 score (default: 1.0).
 
