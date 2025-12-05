@@ -268,6 +268,13 @@ python -m legal_rag.main query --query "your search query here"
                         <td><span class="default-value">300</span></td>
                         <td>Maximum characters to display in text preview. Use <code>0</code> to display full text without truncation.</td>
                     </tr>
+                    <tr>
+                        <td class="arg-name">--output-html</td>
+                        <td>string</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">None</span></td>
+                        <td>Path to save HTML file with search results (e.g., <code>./output/results.html</code>). If not specified, no HTML file is generated.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -360,6 +367,18 @@ combined_score = embedding_score × weight_embedding + keyword_score × weight_k
 --display-limit 0     # Show full text (no truncation)
 --display-limit 100   # Show less text</div>
             </div>
+            
+            <h3>--output-html</h3>
+            <p>Generates a visually appealing HTML file with all search results. The HTML includes full result text (not truncated), scores, metadata, and search parameters. The output directory is created automatically if it doesn't exist.</p>
+            <div class="tip">
+                <strong>💡 Tip:</strong> The HTML output is perfect for sharing results, printing, or viewing in a browser. It includes full text for all results regardless of the <code>--display-limit</code> setting.
+            </div>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--output-html ./output/results.html
+--output-html ./results/search_2024.html
+--output-html /path/to/custom/output.html</div>
+            </div>
         </div>
         
         <div class="section">
@@ -423,9 +442,25 @@ combined_score = embedding_score × weight_embedding + keyword_score × weight_k
   --display-limit 0</div>
             </div>
             
+            <h3>Generate HTML Output</h3>
+            <div class="example">
+                <div class="example-title">Save results to HTML file:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "sales contract" \
+  --output-html ./output/results.html</div>
+            </div>
+            <div class="example">
+                <div class="example-title">HTML with custom parameters:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "property rights" \
+  --top-k 50 \
+  --min-score 0.5 \
+  --output-html ./results/property_search.html</div>
+            </div>
+            
             <h3>Complete Example</h3>
             <div class="example">
-                <div class="example-title">All parameters customized:</div>
+                <div class="example-title">All parameters customized with HTML output:</div>
                 <div class="example-code">python -m legal_rag.main query \
   --query "prescription period for claims arising from sales contracts" \
   --index-dir ./data/index \
@@ -434,7 +469,8 @@ combined_score = embedding_score × weight_embedding + keyword_score × weight_k
   --search-multiplier 50.0 \
   --weight-embedding 1.5 \
   --weight-keyword 1.0 \
-  --display-limit 500</div>
+  --display-limit 500 \
+  --output-html ./output/complete_search.html</div>
             </div>
         </div>
         
@@ -455,6 +491,10 @@ combined_score = embedding_score × weight_embedding + keyword_score × weight_k
             
             <div class="tip">
                 <strong>💡 Tip:</strong> Use <code>--display-limit 0</code> to see full chunk text. The full text is always available in the result object if you're using the API programmatically.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Use <code>--output-html</code> to generate a beautiful, shareable HTML report of your search results. Perfect for documentation, presentations, or sharing with colleagues.
             </div>
             
             <div class="note">
