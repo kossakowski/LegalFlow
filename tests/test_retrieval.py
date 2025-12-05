@@ -171,7 +171,9 @@ class TestLegalRetriever:
             assert isinstance(result.text, str)
             assert isinstance(result.source_file, str)
             assert isinstance(result.score, float)
-            assert 0.0 <= result.score <= 1.0  # Cosine similarity
+            # Combined score can exceed 1.0 when both embedding and keyword scores are high
+            # Score is: embedding_score * weight_embedding + keyword_score * weight_keyword
+            assert result.score >= 0.0
 
     # Tests for tokenization (dictionary search)
     def test_tokenize_basic(self):
