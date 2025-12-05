@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalFlow - Query Command Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .intro {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .command {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .arg-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .arg-table th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .arg-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .arg-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .arg-name {
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .default-value {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .required {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .optional {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .example {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        
+        .example-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .example-code {
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            white-space: pre-wrap;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        
+        .tip {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LegalFlow Query Command Documentation</h1>
+        
+        <div class="intro">
+            <p><strong>Command:</strong> <code>python -m legal_rag.main query</code></p>
+            <p>Search for legal provision fragments using hybrid embedding + BM25 keyword search.</p>
+        </div>
+        
+        <div class="section">
+            <h2>Basic Usage</h2>
+            <div class="command">
+python -m legal_rag.main query --query "your search query here"
+            </div>
+            <p>This command searches the index using default parameters. The query text is the only required argument.</p>
+        </div>
+        
+        <div class="section">
+            <h2>All Arguments</h2>
+            
+            <table class="arg-table">
+                <thead>
+                    <tr>
+                        <th>Argument</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="arg-name">--query</td>
+                        <td>string</td>
+                        <td><span class="required">Yes</span></td>
+                        <td>-</td>
+                        <td>The search query text. This is the text you want to search for in the legal provisions.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--index-dir</td>
+                        <td>string</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">./data/index</span></td>
+                        <td>Directory containing <code>index.faiss</code> and <code>metadata.json</code> files.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--top-k</td>
+                        <td>integer</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">100</span></td>
+                        <td>Maximum number of results to return. Use <code>0</code> to display all results.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--min-score</td>
+                        <td>float</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">0.0</span></td>
+                        <td>Minimum combined score threshold. Results with scores below this value will be filtered out.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--model-name</td>
+                        <td>string</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2</span></td>
+                        <td>Name of the embedding model. Must match the model used when building the index.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--search-multiplier</td>
+                        <td>float</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">100.0</span></td>
+                        <td>Multiplier determining how many more candidates to search than <code>top_k</code>. Higher values search more candidates before ranking (better recall, slightly slower).</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--weight-embedding</td>
+                        <td>float</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">1.0</span></td>
+                        <td>Weight for embedding-based (semantic) similarity score in the combined ranking.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--weight-keyword</td>
+                        <td>float</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">1.0</span></td>
+                        <td>Weight for keyword/BM25-based score in the combined ranking.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--display-limit</td>
+                        <td>integer</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">300</span></td>
+                        <td>Maximum characters to display in text preview. Use <code>0</code> to display full text without truncation.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Detailed Argument Descriptions</h2>
+            
+            <h3>--query (Required)</h3>
+            <p>The search query is the text you want to find in the legal provisions. It can be in any language supported by the embedding model (default supports multiple languages including Polish and English).</p>
+            <div class="example">
+                <div class="example-title">Example:</div>
+                <div class="example-code">--query "when does a claim for payment become time-barred?"</div>
+            </div>
+            <div class="example">
+                <div class="example-title">Polish Example:</div>
+                <div class="example-code">--query "kiedy przedawnia się roszczenie o zapłatę?"</div>
+            </div>
+            
+            <h3>--index-dir</h3>
+            <p>Specifies the directory containing the FAISS index files. If not specified, defaults to <code>./data/index</code>.</p>
+            <div class="example">
+                <div class="example-title">Example:</div>
+                <div class="example-code">--index-dir ./data/index
+--index-dir /path/to/custom/index</div>
+            </div>
+            
+            <h3>--top-k</h3>
+            <p>Controls how many results are returned. The default is 100 results. Set to 0 to return all matching results (no limit).</p>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--top-k 50      # Return top 50 results
+--top-k 200     # Return top 200 results
+--top-k 0       # Return all results</div>
+            </div>
+            
+            <h3>--min-score</h3>
+            <p>Filters out results with combined scores below this threshold. Useful for getting only high-quality matches. Scores range from 0.0 to higher values (typically 0.0-2.0+ depending on weights).</p>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--min-score 0.0   # Include all results (default)
+--min-score 0.5   # Only results with score >= 0.5
+--min-score 1.0   # Only high-quality results</div>
+            </div>
+            
+            <h3>--search-multiplier</h3>
+            <p>Controls how many candidates are retrieved before final ranking. Higher values improve recall but may be slightly slower. The system searches <code>top_k × search_multiplier</code> candidates (capped at total documents).</p>
+            <div class="note">
+                <strong>Note:</strong> Performance impact is minimal (not linear). Going from 2.0 to 100.0 typically adds only 10-30% time due to fixed costs (encoding, BM25 scoring).
+            </div>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--search-multiplier 2.0    # Fast, good quality
+--search-multiplier 10.0   # Better recall
+--search-multiplier 100.0  # Maximum recall (default)</div>
+            </div>
+            
+            <h3>--weight-embedding and --weight-keyword</h3>
+            <p>These control the hybrid search balance. The final score is calculated as:</p>
+            <div class="command">
+combined_score = embedding_score × weight_embedding + keyword_score × weight_keyword
+            </div>
+            <ul>
+                <li><strong>Equal weights (1.0, 1.0):</strong> Balanced hybrid search (default)</li>
+                <li><strong>Higher embedding weight:</strong> Better for conceptual queries, synonyms, paraphrases</li>
+                <li><strong>Higher keyword weight:</strong> Better for exact terms, article numbers, specific phrases</li>
+                <li><strong>Keyword-only (0.0, 1.0):</strong> Pure dictionary/keyword search</li>
+                <li><strong>Embedding-only (1.0, 0.0):</strong> Pure semantic search</li>
+            </ul>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code"># Balanced (default)
+--weight-embedding 1.0 --weight-keyword 1.0
+
+# Favor semantic understanding
+--weight-embedding 2.0 --weight-keyword 0.5
+
+# Favor exact keyword matching
+--weight-embedding 0.5 --weight-keyword 2.0
+
+# Keyword-only search
+--weight-embedding 0.0 --weight-keyword 1.0</div>
+            </div>
+            
+            <h3>--display-limit</h3>
+            <p>Controls how much text is shown in the preview for each result. The full text is always stored in the result object; this only affects the display.</p>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--display-limit 300   # Show 300 characters (default)
+--display-limit 500   # Show more text
+--display-limit 0     # Show full text (no truncation)
+--display-limit 100   # Show less text</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Usage Examples</h2>
+            
+            <h3>Basic Search</h3>
+            <div class="example">
+                <div class="example-title">Simple query with defaults:</div>
+                <div class="example-code">python -m legal_rag.main query --query "sales contract"</div>
+            </div>
+            
+            <h3>Custom Number of Results</h3>
+            <div class="example">
+                <div class="example-title">Get more results:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "liability for damages" \
+  --top-k 200</div>
+            </div>
+            
+            <h3>High-Quality Results Only</h3>
+            <div class="example">
+                <div class="example-title">Filter by minimum score:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "property rights" \
+  --min-score 0.8 \
+  --top-k 20</div>
+            </div>
+            
+            <h3>Favoring Semantic Search</h3>
+            <div class="example">
+                <div class="example-title">Better for conceptual queries:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "when can a contract be voided due to mistake?" \
+  --weight-embedding 2.0 \
+  --weight-keyword 0.5</div>
+            </div>
+            
+            <h3>Favoring Keyword Search</h3>
+            <div class="example">
+                <div class="example-title">Better for exact terms:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "Art. 353 kodeks cywilny" \
+  --weight-embedding 0.5 \
+  --weight-keyword 2.0</div>
+            </div>
+            
+            <h3>Keyword-Only Search</h3>
+            <div class="example">
+                <div class="example-title">Pure dictionary search:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "odpowiedzialność cywilna" \
+  --weight-embedding 0.0 \
+  --weight-keyword 1.0</div>
+            </div>
+            
+            <h3>Full Text Display</h3>
+            <div class="example">
+                <div class="example-title">Show complete chunks:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "statute of limitations" \
+  --display-limit 0</div>
+            </div>
+            
+            <h3>Complete Example</h3>
+            <div class="example">
+                <div class="example-title">All parameters customized:</div>
+                <div class="example-code">python -m legal_rag.main query \
+  --query "prescription period for claims arising from sales contracts" \
+  --index-dir ./data/index \
+  --top-k 25 \
+  --min-score 0.3 \
+  --search-multiplier 50.0 \
+  --weight-embedding 1.5 \
+  --weight-keyword 1.0 \
+  --display-limit 500</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Tips and Best Practices</h2>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Start with default parameters, then adjust weights based on your query type. Use higher <code>--weight-embedding</code> for conceptual queries and higher <code>--weight-keyword</code> for exact term searches.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Use <code>--min-score</code> to filter out low-quality results. Start with 0.0 and increase if you get too many irrelevant results.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> The <code>--search-multiplier</code> has minimal performance impact. Setting it to 100.0 (default) provides excellent recall with only a small time increase.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Use <code>--display-limit 0</code> to see full chunk text. The full text is always available in the result object if you're using the API programmatically.
+            </div>
+            
+            <div class="note">
+                <strong>⚠️ Important:</strong> The <code>--model-name</code> must match the model used when building the index. Using a different model will produce incorrect results.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Understanding Search Results</h2>
+            
+            <p>Each search result includes:</p>
+            <ul>
+                <li><strong>ID:</strong> Unique identifier for the chunk</li>
+                <li><strong>Score:</strong> Combined similarity score (weighted sum of embedding and keyword scores)</li>
+                <li><strong>Source:</strong> Source file name</li>
+                <li><strong>Article Hint:</strong> Article number if detected (e.g., "Art. 1.")</li>
+                <li><strong>Method:</strong> How the result was found: "embedding", "keyword", or "both"</li>
+                <li><strong>Text:</strong> The chunk text (truncated to display_limit characters by default)</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> Results are sorted by combined score in descending order (best matches first).
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
