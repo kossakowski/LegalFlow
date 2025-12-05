@@ -50,12 +50,18 @@ Optional parameters:
 - `--model-name` - name of embedding model (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
 - `--max-chunk-size` - maximum chunk length in characters (default: 1200)
 
-## Searching
+## Searching (hybrid: embeddings + BM25)
 
-To search for legal provision fragments:
+To search for legal provision fragments (hybrid embeddings + keyword/BM25):
 
 ```bash
-python -m legal_rag.main query --index-dir ./data/index --query "when does a claim for payment from a sales contract become time-barred?" --top-k 50 --min-score 0.0
+python -m legal_rag.main query \
+  --index-dir ./data/index \
+  --query "when does a claim for payment from a sales contract become time-barred?" \
+  --top-k 50 \
+  --min-score 0.0 \
+  --weight-embedding 1.0 \
+  --weight-keyword 1.0
 ```
 
 Parameters:
@@ -63,14 +69,16 @@ Parameters:
 - `--index-dir` - directory containing `index.faiss` and `metadata.json`
 - `--query` - query text
 - `--top-k` - maximum number of results (default: 50). Use `0` to display all results
-- `--min-score` - minimum score (cosine similarity) to include (default: 0.0)
+- `--min-score` - minimum combined score to include (default: 0.0)
 - `--model-name` - name of embedding model (must be same as used for building)
 - `--search-multiplier` - multiplier determining how many more candidates to search than top_k (default: 2.0)
+- `--weight-embedding` - weight for embedding-based score (default: 1.0)
+- `--weight-keyword` - weight for keyword/BM25-based score (default: 1.0)
 
 ### Usage Examples
 
 ```bash
-# Basic search (50 results)
+# Basic hybrid search (50 results)
 python -m legal_rag.main query --index-dir ./data/index --query "sales contract"
 
 # More results
@@ -79,11 +87,17 @@ python -m legal_rag.main query --index-dir ./data/index --query "liability" --to
 # All results
 python -m legal_rag.main query --index-dir ./data/index --query "statute of limitations" --top-k 0
 
-# With minimum similarity filtering
+# With minimum combined similarity filtering
 python -m legal_rag.main query --index-dir ./data/index --query "property" --min-score 0.5
 
 # With larger search multiplier (more candidates)
 python -m legal_rag.main query --index-dir ./data/index --query "contract" --search-multiplier 3.0
+
+# Tuning weights (favor embeddings)
+python -m legal_rag.main query --index-dir ./data/index --query "umowa sprzedaży" --weight-embedding 1.5 --weight-keyword 0.5
+
+# Tuning weights (favor keywords/BM25)
+python -m legal_rag.main query --index-dir ./data/index --query "umowa sprzedaży" --weight-embedding 0.5 --weight-keyword 1.5
 ```
 
 ## Architecture

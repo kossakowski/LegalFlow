@@ -29,28 +29,30 @@ def cmd_query(args: argparse.Namespace) -> None:
             index_dir=args.index_dir,
             model_name=args.model_name
         )
-        
+
         # If top_k=0, set to very large value (all results)
         top_k = args.top_k if args.top_k > 0 else 999999
-        
+
         results = retriever.search(
             query=args.query,
             top_k=top_k,
             min_score=args.min_score,
-            search_multiplier=args.search_multiplier
+            search_multiplier=args.search_multiplier,
+            weight_embedding=args.weight_embedding,
+            weight_keyword=args.weight_keyword,
         )
-        
+
         if not results:
             print("No results found matching criteria.")
             return
-        
+
         print(f"\nFound {len(results)} results:\n")
         print("=" * 80)
-        
+
         for i, result in enumerate(results, 1):
             print(f"\n[{i}] {result}")
             print("-" * 80)
-        
+
     except Exception as e:
         print(f"Error during search: {e}", file=sys.stderr)
         sys.exit(1)
@@ -62,9 +64,9 @@ def main() -> None:
         description="LegalFlow - Legal provision retrieval system",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # build-index command
     parser_build = subparsers.add_parser(
         "build-index",
@@ -95,7 +97,7 @@ def main() -> None:
         help="Maximum chunk length in characters (default: 1200)"
     )
     parser_build.set_defaults(func=cmd_build_index)
-    
+
     # query command
     parser_query = subparsers.add_parser(
         "query",
@@ -137,14 +139,26 @@ def main() -> None:
         default=2.0,
         help="Multiplier determining how many more candidates to search than top_k (default: 2.0)"
     )
+    parser_query.add_argument(
+        "--weight-embedding",
+        type=float,
+        default=1.0,
+        help="Weight for embedding-based score (default: 1.0)"
+    )
+    parser_query.add_argument(
+        "--weight-keyword",
+        type=float,
+        default=1.0,
+        help="Weight for keyword/BM25-based score (default: 1.0)"
+    )
     parser_query.set_defaults(func=cmd_query)
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         sys.exit(1)
-    
+
     args.func(args)
 
 
