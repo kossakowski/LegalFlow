@@ -52,4 +52,7 @@ coverage.xml
 *.pyc
 __pycache__/
 
+# HTML output directory
+htmloutput/
+
 
