@@ -106,8 +106,8 @@ def main() -> None:
     parser_query.add_argument(
         "--index-dir",
         type=str,
-        required=True,
-        help="Directory containing index.faiss and metadata.json"
+        default="./data/index",
+        help="Directory containing index.faiss and metadata.json (default: ./data/index)"
     )
     parser_query.add_argument(
         "--query",
