@@ -40,6 +40,7 @@ def cmd_query(args: argparse.Namespace) -> None:
             search_multiplier=args.search_multiplier,
             weight_embedding=args.weight_embedding,
             weight_keyword=args.weight_keyword,
+            display_limit=args.display_limit,
         )
 
         if not results:
@@ -150,6 +151,12 @@ def main() -> None:
         type=float,
         default=1.0,
         help="Weight for keyword/BM25-based score (default: 1.0)"
+    )
+    parser_query.add_argument(
+        "--display-limit",
+        type=int,
+        default=300,
+        help="Maximum characters to display in text preview (default: 300). Use 0 to display full text."
     )
     parser_query.set_defaults(func=cmd_query)
 

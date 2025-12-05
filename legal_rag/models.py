@@ -16,11 +16,15 @@ class SearchResult:
     method: str = "embedding"  # embedding | keyword | both
     embedding_score: Optional[float] = None
     keyword_score: Optional[float] = None
+    display_limit: int = 300  # Maximum characters to display in text preview
 
     def __str__(self) -> str:
         """Text representation of the result."""
         article_info = f" [{self.article_hint}]" if self.article_hint else ""
-        text_preview = self.text[:300] + "..." if len(self.text) > 300 else self.text
+        if self.display_limit == 0 or len(self.text) <= self.display_limit:
+            text_preview = self.text
+        else:
+            text_preview = self.text[:self.display_limit] + "..."
         method_info = f" | Method: {self.method}"
         return (
             f"ID: {self.id} | Score: {self.score:.4f} | "

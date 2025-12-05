@@ -78,7 +78,8 @@ class LegalRetriever:
         min_score: float = 0.0,
         search_multiplier: float = 100.0,
         weight_embedding: float = 1.0,
-        weight_keyword: float = 1.0
+        weight_keyword: float = 1.0,
+        display_limit: int = 300
     ) -> List[SearchResult]:
         """
         Search for legal provision fragments similar to query using hybrid embedding + BM25.
@@ -90,6 +91,7 @@ class LegalRetriever:
             search_multiplier: Multiplier determining how many more candidates to search than top_k (default: 100.0).
             weight_embedding: Weight for embedding-based score (default: 1.0).
             weight_keyword: Weight for keyword/BM25 score (default: 1.0).
+            display_limit: Maximum characters to display in text preview (default: 300).
 
         Returns:
             List of SearchResult objects sorted descending by combined score.
@@ -162,6 +164,7 @@ class LegalRetriever:
                     method=method,
                     embedding_score=emb_score or None,
                     keyword_score=kw_score or None,
+                    display_limit=display_limit,
                 )
             )
 
