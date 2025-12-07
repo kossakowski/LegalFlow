@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LegalFlow - Query Command Documentation</title>
+    <title>LegalFlow - Command Documentation</title>
     <style>
         * {
             margin: 0;
@@ -176,12 +176,216 @@
 </head>
 <body>
     <div class="container">
-        <h1>LegalFlow Query Command Documentation</h1>
+        <h1>LegalFlow Command Documentation</h1>
         
-        <div class="intro">
-            <p><strong>Command:</strong> <code>python -m legal_rag.main query</code></p>
-            <p>Search for legal provision fragments using hybrid embedding + BM25 keyword search.</p>
+        <div class="section">
+            <h2>Available Commands</h2>
+            <p>LegalFlow provides two main commands:</p>
+            <ul>
+                <li><strong><code>build-index</code></strong> - Build FAISS index from legal text files</li>
+                <li><strong><code>query</code></strong> - Search for legal provision fragments</li>
+            </ul>
         </div>
+        
+        <div class="section">
+            <h2>Build Index Command</h2>
+            
+            <div class="intro">
+                <p><strong>Command:</strong> <code>python -m legal_rag.main build-index</code></p>
+                <p>Build a FAISS index from legal provision text files. This command processes .txt files, splits them into fragments, computes embeddings, and creates a searchable index.</p>
+            </div>
+            
+            <h3>Basic Usage</h3>
+            <div class="command">
+python -m legal_rag.main build-index --input-dir ./data/txt --output-dir ./data/index
+            </div>
+            <p>This command builds an index using default parameters. Both input and output directories are required.</p>
+            
+            <h3>All Arguments</h3>
+            
+            <table class="arg-table">
+                <thead>
+                    <tr>
+                        <th>Argument</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="arg-name">--input-dir</td>
+                        <td>string</td>
+                        <td><span class="required">Yes</span></td>
+                        <td>-</td>
+                        <td>Directory containing .txt files with legal provisions. Files are loaded recursively from all subdirectories.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--output-dir</td>
+                        <td>string</td>
+                        <td><span class="required">Yes</span></td>
+                        <td>-</td>
+                        <td>Output directory where <code>index.faiss</code> and <code>metadata.json</code> will be saved. Directory is created automatically if it doesn't exist.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--model-name</td>
+                        <td>string</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2</span></td>
+                        <td>Name of the embedding model to use. Must be a sentence-transformers model compatible with your legal text language.</td>
+                    </tr>
+                    <tr>
+                        <td class="arg-name">--max-chunk-size</td>
+                        <td>integer</td>
+                        <td><span class="optional">No</span></td>
+                        <td><span class="default-value">1200</span></td>
+                        <td>Maximum chunk length in characters. Used when splitting text that doesn't have article headers. Text with article headers (e.g., "Art. 118.") is split by articles regardless of this setting.</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Detailed Argument Descriptions</h3>
+            
+            <h3>--input-dir (Required)</h3>
+            <p>Specifies the directory containing your legal provision text files. All .txt files in this directory and its subdirectories will be processed. Files must be encoded in UTF-8.</p>
+            <div class="example">
+                <div class="example-title">Example:</div>
+                <div class="example-code">--input-dir ./data/txt
+--input-dir /path/to/legal/documents</div>
+            </div>
+            <div class="tip">
+                <strong>💡 Tip:</strong> You can organize files in subdirectories. For example:
+                <div class="example-code">data/txt/
+  ├── kodeks_cywilny.txt
+  ├── kodeks_pracy.txt
+  └── regulations/
+      └── rozporzadzenie.txt</div>
+                All .txt files will be included automatically.
+            </div>
+            
+            <h3>--output-dir (Required)</h3>
+            <p>Directory where the index files will be saved. The directory will be created automatically if it doesn't exist. Two files are created:</p>
+            <ul>
+                <li><code>index.faiss</code> - The FAISS vector index containing embeddings</li>
+                <li><code>metadata.json</code> - JSON file with text fragments, IDs, source files, and article hints</li>
+            </ul>
+            <div class="example">
+                <div class="example-title">Example:</div>
+                <div class="example-code">--output-dir ./data/index
+--output-dir /path/to/index/output</div>
+            </div>
+            
+            <h3>--model-name</h3>
+            <p>The embedding model used to convert text into vector representations. The default model supports multiple languages including Polish and English. You must use the same model when building and querying the index.</p>
+            <div class="note">
+                <strong>⚠️ Important:</strong> Always use the same model name for both building the index and querying. Using different models will produce incorrect search results.
+            </div>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code"># Use default multilingual model
+--model-name sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+
+# Use a different multilingual model
+--model-name sentence-transformers/paraphrase-multilingual-mpnet-base-v2</div>
+            </div>
+            
+            <h3>--max-chunk-size</h3>
+            <p>Controls the maximum size of text chunks when splitting documents. However, the splitting algorithm is intelligent:</p>
+            <ul>
+                <li><strong>If article headers are detected</strong> (e.g., "Art. 118.", "Art. 1."): Text is split by articles, and this parameter is ignored for those files.</li>
+                <li><strong>If no article headers are found</strong>: Text is split by paragraphs or every <code>max_chunk_size</code> characters, whichever is smaller.</li>
+            </ul>
+            <div class="example">
+                <div class="example-title">Examples:</div>
+                <div class="example-code">--max-chunk-size 800   # Smaller chunks (more granular)
+--max-chunk-size 1200  # Default, balanced
+--max-chunk-size 2000  # Larger chunks (more context)</div>
+            </div>
+            <div class="tip">
+                <strong>💡 Tip:</strong> Larger chunks provide more context but may reduce precision. Smaller chunks are more precise but may miss broader context. The default of 1200 characters is a good balance for most legal texts.
+            </div>
+            
+            <h3>Usage Examples</h3>
+            
+            <h3>Basic Index Building</h3>
+            <div class="example">
+                <div class="example-title">Simple build with defaults:</div>
+                <div class="example-code">python -m legal_rag.main build-index \
+  --input-dir ./data/txt \
+  --output-dir ./data/index</div>
+            </div>
+            
+            <h3>Custom Chunk Size</h3>
+            <div class="example">
+                <div class="example-title">Build with smaller chunks:</div>
+                <div class="example-code">python -m legal_rag.main build-index \
+  --input-dir ./data/txt \
+  --output-dir ./data/index \
+  --max-chunk-size 800</div>
+            </div>
+            
+            <h3>Custom Embedding Model</h3>
+            <div class="example">
+                <div class="example-title">Use a different embedding model:</div>
+                <div class="example-code">python -m legal_rag.main build-index \
+  --input-dir ./data/txt \
+  --output-dir ./data/index \
+  --model-name sentence-transformers/paraphrase-multilingual-mpnet-base-v2</div>
+            </div>
+            
+            <h3>Complete Example</h3>
+            <div class="example">
+                <div class="example-title">All parameters customized:</div>
+                <div class="example-code">python -m legal_rag.main build-index \
+  --input-dir /path/to/legal/documents \
+  --output-dir /path/to/output/index \
+  --model-name sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 \
+  --max-chunk-size 1500</div>
+            </div>
+            
+            <h3>Tips and Best Practices for Build Index</h3>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Make sure your .txt files are encoded in UTF-8. The system will attempt to read them but may fail silently or produce errors with other encodings.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Organize your source files with descriptive names. The source file name is stored in metadata and will appear in search results, helping you identify the origin of each fragment.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> If your documents have article headers (like "Art. 118."), the system will automatically detect and split by articles, providing better semantic boundaries. This is ideal for legal codes.
+            </div>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Rebuild the index whenever you add new documents or update existing ones. The index doesn't automatically update - you need to rebuild it manually.
+            </div>
+            
+            <div class="note">
+                <strong>⚠️ Important:</strong> Remember the model name you use when building the index. You'll need to use the same model name when querying, or search results will be incorrect.
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> Building an index can take time depending on the size of your documents. The process includes:
+                <ol>
+                    <li>Loading and parsing all .txt files</li>
+                    <li>Splitting text into chunks</li>
+                    <li>Computing embeddings for all chunks (this is the slowest step)</li>
+                    <li>Building the FAISS index</li>
+                    <li>Saving index and metadata files</li>
+                </ol>
+                Progress messages are displayed during the process.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Query Command</h2>
+            
+            <div class="intro">
+                <p><strong>Command:</strong> <code>python -m legal_rag.main query</code></p>
+                <p>Search for legal provision fragments using hybrid embedding + BM25 keyword search.</p>
+            </div>
         
         <div class="section">
             <h2>Basic Usage</h2>
